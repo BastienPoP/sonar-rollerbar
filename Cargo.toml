@@ -1,0 +1,39 @@
+[package]
+name = "sonar-rollerbar"
+version = "0.1.0"
+edition = "2024"
+description = "Makes a keyboard volume wheel control a chosen audio output on Windows"
+license = "MIT"
+repository = "https://github.com/BastienPoP/sonar-rollerbar"
+publish = false
+
+# LTO removes the unused network code of std: without it, the GNU linker keeps WS2_32.dll in the
+# import table. Do not set `panic` to "abort": the hook relies on catch_unwind.
+[profile.release]
+lto = "fat"
+codegen-units = 1
+
+# The only direct dependency, at an exact version. deny.toml has the full list.
+[dependencies]
+windows = { version = "=0.62.2", features = [
+    "Win32_Devices_FunctionDiscovery",
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Graphics_Gdi",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_Networking_WinHttp",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Console",
+    "Win32_System_LibraryLoader",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_System_Variant",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_UI_WindowsAndMessaging",
+] }

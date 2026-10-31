@@ -1,0 +1,34 @@
+[graph]
+targets = ["x86_64-pc-windows-gnu"]
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+allow = ["Apache-2.0", "MIT", "Unicode-3.0"]
+
+[bans]
+wildcards = "deny"
+multiple-versions = "warn"
+# Allowlist: any other crate, network-related or not, fails CI.
+allow = [
+    "proc-macro2",
+    "quote",
+    "syn",
+    "unicode-ident",
+    "windows",
+    "windows-collections",
+    "windows-core",
+    "windows-future",
+    "windows-implement",
+    "windows-interface",
+    "windows-link",
+    "windows-numerics",
+    "windows-result",
+    "windows-strings",
+    "windows-threading",
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
