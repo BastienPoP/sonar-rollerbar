@@ -10,6 +10,7 @@ allow = ["Apache-2.0", "MIT", "Unicode-3.0"]
 [bans]
 wildcards = "deny"
 multiple-versions = "warn"
+allow-workspace = true
 # Allowlist: any other crate, network-related or not, fails CI.
 allow = [
     "proc-macro2",
