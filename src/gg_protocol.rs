@@ -74,13 +74,14 @@ impl Control {
         }
     }
 
-    /// The wheel's next target. Master and the Mic aren't targets: the mixer window sets them.
+    /// The wheel's next target, with ChatMix one double click away. Master and the Mic aren't
+    /// targets: the mixer window sets them.
     pub fn next(self, chat_mix_available: bool) -> Self {
         match self {
-            Self::Output => Self::Channel(GAME),
+            Self::Output if chat_mix_available => Self::ChatMix,
+            Self::Output | Self::ChatMix => Self::Channel(GAME),
             Self::Channel(index) if index < AUX => Self::Channel(index + 1),
-            Self::Channel(_) if chat_mix_available => Self::ChatMix,
-            _ => Self::Output,
+            Self::Channel(_) => Self::Output,
         }
     }
 }
@@ -489,22 +490,24 @@ mod tests {
         assert_eq!(ChatMix::turned(-95, -3), -100);
     }
 
+    fn wheel_cycle(chat_mix_available: bool) -> Vec<Control> {
+        let mut seen = vec![Control::Output.next(chat_mix_available)];
+        while seen[seen.len() - 1] != Control::Output {
+            seen.push(seen[seen.len() - 1].next(chat_mix_available));
+        }
+        seen
+    }
+
     #[test]
     fn the_wheel_cycles_through_its_targets() {
-        let mut target = Control::Output;
-        let mut seen = Vec::new();
-        for _ in 0..6 {
-            target = target.next(true);
-            seen.push(target);
-        }
         assert_eq!(
-            seen,
+            wheel_cycle(true),
             [
+                Control::ChatMix,
                 Control::Channel(1),
                 Control::Channel(2),
                 Control::Channel(3),
                 Control::Channel(4),
-                Control::ChatMix,
                 Control::Output,
             ]
         );
@@ -512,6 +515,8 @@ mod tests {
 
     #[test]
     fn the_wheel_skips_an_unavailable_chat_mix() {
+        assert_eq!(Control::Output.next(false), Control::Channel(1));
+        assert_eq!(Control::ChatMix.next(false), Control::Channel(1));
         assert_eq!(Control::Channel(4).next(false), Control::Output);
     }
 
