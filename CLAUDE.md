@@ -36,7 +36,7 @@ rustc --edition 2024 --test src/mixer_ui.rs -o /tmp/tests && /tmp/tests
 Compile the installer from Windows after the release build:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=0.1.0 installer\sonar-rollerbar.iss
+& "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=0.1.1 installer\sonar-rollerbar.iss
 ```
 
 The hook, the wheel, the tray and the installer can only be validated by running them on Windows.

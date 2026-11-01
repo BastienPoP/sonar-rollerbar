@@ -4,7 +4,7 @@
 ; the tray menu edits too, as it manages the same sign-in shortcut as the "startup" task.
 ;
 ; Build the release executable first, then:
-;   iscc /DAppVersion=0.1.0 installer\sonar-rollerbar.iss
+;   iscc /DAppVersion=0.1.1 installer\sonar-rollerbar.iss
 ; CI passes the version from Cargo.toml.
 
 #ifndef AppVersion

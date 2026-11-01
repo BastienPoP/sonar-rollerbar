@@ -381,7 +381,7 @@ To build the installer on Windows, install [Inno Setup](https://jrsoftware.org/i
 run this from the repository root:
 
 ```powershell
-iscc /DAppVersion=0.1.0 installer\sonar-rollerbar.iss
+iscc /DAppVersion=0.1.1 installer\sonar-rollerbar.iss
 ```
 
 </details>

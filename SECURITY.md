@@ -133,8 +133,8 @@ executable. Those programs could also install their own hook, so this gives them
 Compare the hash with the one in the release notes, then check where the file was built:
 
 ```powershell
-Get-FileHash .\sonar-rollerbar-setup-v0.1.0.exe -Algorithm SHA256
-gh attestation verify .\sonar-rollerbar-setup-v0.1.0.exe --repo BastienPoP/sonar-rollerbar
+Get-FileHash .\sonar-rollerbar-setup-v0.1.1.exe -Algorithm SHA256
+gh attestation verify .\sonar-rollerbar-setup-v0.1.1.exe --repo BastienPoP/sonar-rollerbar
 ```
 
 To audit the code, start with `keyboard_proc` and `should_swallow` in `src/win.rs`, then
