@@ -1,13 +1,76 @@
+<div align="center">
+
+<img src="docs/images/icon.png" alt="" width="112">
+
 # sonar-rollerbar
 
-A small Windows utility that makes your keyboard's volume wheel control a real audio output
-directly, instead of the Windows default output. It's useful when the default output is a virtual
-device, such as a SteelSeries Sonar channel.
+**Your keyboard's volume wheel, on your real speakers or headset.**
 
-It works with any keyboard whose wheel sends the standard Volume Up, Volume Down and Mute keys.
-On SteelSeries keyboards, it can also show the volume on the OLED and control Sonar.
+A small Windows utility for setups where the default output is a virtual device, such as a
+SteelSeries Sonar channel.
+
+[![CI](https://github.com/BastienPoP/sonar-rollerbar/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/BastienPoP/sonar-rollerbar/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/BastienPoP/sonar-rollerbar?label=release)](https://github.com/BastienPoP/sonar-rollerbar/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/BastienPoP/sonar-rollerbar)](LICENSE)
+
+**[Download](https://github.com/BastienPoP/sonar-rollerbar/releases/latest)** ·
+[What it does](#what-this-program-does) ·
+[Install](#install) ·
+[SteelSeries options](#steelseries-options) ·
+[Troubleshooting](#troubleshooting)
 
 Not affiliated with SteelSeries.
+
+</div>
+
+## Why
+
+When a virtual device is the Windows default output, the volume wheel changes that device rather
+than the output you listen on. With Sonar, the wheel moves a single channel and upsets your mix.
+This program sends the wheel to the output you chose:
+
+| | Windows alone | With sonar-rollerbar |
+| --- | --- | --- |
+| Turning the wheel changes | the default output, such as a Sonar channel | your speakers or headset |
+| Clicking the wheel mutes | the default output | your speakers or headset |
+| Play/Pause, Next, Previous | work as usual | work as usual |
+
+## Features
+
+**The program's main job is simple: your volume wheel controls the output you chose.** That works
+as soon as it's installed, with no option to tick, and it opens no connection.
+
+- **Any wheel keyboard.** It works with any keyboard whose wheel sends the standard Volume Up,
+  Volume Down and Mute keys. It was developed on a SteelSeries Apex Pro.
+- **Your outputs, in your order.** If the first one disconnects, the wheel moves to the next, and
+  it comes back when the first one returns.
+- **A wheel step for each output**, set from the tray menu.
+- **Light and easy to audit.** One executable under 1 MB and one direct dependency, with no
+  administrator rights, service or driver.
+
+**Everything else is optional.** With SteelSeries GG, [five options](#steelseries-options) add
+features on top. All of them are off until you tick them:
+
+- **OLED:** the keyboard's screen shows what changed and its level.
+- **Sonar mixer:** a window with sliders and mute buttons for your output, Master, Game, Chat, Media,
+  Aux and Mic, plus ChatMix.
+- **Follow Sonar's output:** change the output in GG and the wheel moves with it.
+- **Double-click the wheel:** point it at ChatMix or a Sonar channel, including the Mic, instead of
+  your output. After 10 seconds, it returns to your output.
+- **Include Master:** add Master to what the double click can reach.
+
+## Screenshots
+
+<table>
+  <tr>
+    <th>Sonar mixer</th>
+    <th>Tray menu</th>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/images/mixer.png" width="372" alt="The mixer window, with sliders and mute buttons for the output, Master, Game, Chat, Media, Aux and Mic, and a ChatMix slider between Game and Chat."></td>
+    <td valign="top"><img src="docs/images/tray-menu.png" width="300" alt="The tray menu, showing the current output and volume above Open Sonar mixer, Pause, Wheel step for this output, Options, Run at startup, Check for updates, Open logs, About and Quit."></td>
+  </tr>
+</table>
 
 ## What this program does
 
@@ -34,8 +97,9 @@ to audit a release.
    [releases page](https://github.com/BastienPoP/sonar-rollerbar/releases).
 2. [Verify the download](SECURITY.md#verifying-a-download).
 3. Run the installer. It doesn't need administrator rights and lets you choose:
-   - the main output and an optional fallback;
-   - the [SteelSeries options](#steelseries-options);
+   - the main output and an optional fallback, which is all the program needs;
+   - any of the [SteelSeries options](#steelseries-options), which add features and are all off by
+     default;
    - whether to start automatically when you sign in.
 
 To uninstall, use **Settings > Apps > Installed apps**. This stops the program and removes its
@@ -108,6 +172,9 @@ If no selected output is available, volume keys continue to Windows as usual.
 Volume keys are handled whichever keyboard sends them. That covers keyboards with a hardware wheel
 and the Apex Pro wheel through SteelSeries GG, so most setups need nothing more.
 
+<details>
+<summary>Keeping another keyboard's volume keys with <code>--injected-only</code></summary>
+
 `--injected-only` is for the rare case where another keyboard's volume keys should keep their normal
 behaviour. Some vendor software creates these keys itself instead of the keyboard sending them
 directly, as SteelSeries GG does for the Apex Pro wheel. Windows marks such keys as *injected*, and
@@ -124,6 +191,8 @@ Leave it out for a keyboard with a hardware wheel, or the wheel will be ignored.
 
 The filter looks at how a key was produced, not at which keyboard sent it. Windows doesn't tell a
 hook which device a key came from.
+
+</details>
 
 ## Tray icon
 
@@ -156,15 +225,18 @@ taskkill /IM sonar-rollerbar.exe /F
 
 ## SteelSeries options
 
-All four are off by default. You can set them in the installer and change them at any time from
-the tray menu. With all four off, the program opens no connection at all.
+You don't need any of these for the wheel to control your output. Each one adds a feature on top.
 
-| Option | Effect |
-| --- | --- |
-| **Show volume on keyboard OLED** | Shows what changed and its level for 3 seconds, on keyboards with a screen. |
-| **Sonar mixer** | Adds a window with sliders and mute buttons for your output, Master, Game, Chat, Media, Aux and Mic, plus ChatMix. |
-| **Follow Sonar's output** | Makes the wheel control the output Sonar plays to. |
-| **Double-click the wheel to choose what it controls** | Points the wheel at your output, a Sonar channel or ChatMix. |
+All of them are off by default. You can tick them in the installer and change them at any time from
+**Options** in the tray menu. With all of them off, the program opens no connection at all.
+
+| Option | What it adds | What it needs |
+| --- | --- | --- |
+| **Show volume on keyboard OLED** | For 3 seconds after each change, the keyboard's screen shows what changed and its level. | GG and a keyboard with a screen |
+| **Sonar mixer** | A window, opened by clicking the tray icon, with sliders and mute buttons for your output, Master, Game, Chat, Media, Aux and Mic, plus ChatMix. | GG with Sonar |
+| **Follow Sonar's output** | When you change Sonar's output in GG, the wheel moves to it. Without this option, the wheel stays on the output you chose. | GG with Sonar |
+| **Double-click the wheel to choose what it controls** | A double click points the wheel at ChatMix, Game, Chat, Media, Aux or Mic instead of your output. | GG with Sonar |
+| **Include Master in the double click** | Adds Master to those choices. It only applies with the option above. | GG with Sonar |
 
 They use SteelSeries GG's local services. Sonar's API is unofficial and could change with any GG
 update: if it does, these options stop and the volume wheel keeps working.
@@ -175,12 +247,15 @@ reopen it.
 
 ### Choosing what the wheel controls
 
-A double click moves the wheel to the next of Output, Game, Chat, Media, Aux and ChatMix. The OLED,
-the mixer window and the tray icon's tooltip show where it is. After 10 seconds without touching the
-wheel, it returns to Output by itself.
+A double click moves the wheel to the next of Output, ChatMix, Game, Chat, Media, Aux and Mic. With
+**Include Master in the double click**, Master comes right after ChatMix. The OLED, the mixer window
+and the tray icon's tooltip show where the wheel is. After 10 seconds without touching the wheel, it
+returns to Output by itself.
 
 - Turning changes the target by your wheel step, or by 5% for ChatMix.
-- Clicking mutes or unmutes the target, and recentres ChatMix.
+- Clicking mutes or unmutes the target, and recentres ChatMix. On Mic, this mutes your microphone.
+- Master rescales Game, Chat, Media and Aux together: see
+  [How Sonar's volumes work](#how-sonars-volumes-work).
 - While this option is on, a single click takes about a third of a second to act, because the
   program has to wait for a possible second click.
 - ChatMix is skipped when Sonar can't set it, for example with a headset that has its own ChatMix
@@ -198,7 +273,8 @@ Sonar treats Master as a ceiling, as the Windows volume mixer does:
 The level shown on a channel is its real level: Master is already included in it.
 
 The simplest setup is to leave Master at 100% and use the wheel for the overall volume, so that the
-channels only set the balance between them. This program never changes Master by itself.
+channels only set the balance between them. This program never changes Master by itself: only the
+mixer, or the wheel while you point it at Master, can move it.
 
 ### Following Sonar's output
 
@@ -248,6 +324,18 @@ Keep the executable on the Windows side rather than in WSL, which isn't running 
 
 ## Troubleshooting
 
+| Symptom | Likely cause |
+| --- | --- |
+| The wheel sometimes changes the default output | A window running as administrator has focus: see [below](#games-running-as-administrator). |
+| The wheel changes a Sonar channel instead of your output | A double click moved it: wait 10 seconds. |
+| The OLED or Sonar options do nothing | GG isn't running: see the logs for the reason. |
+| Nothing appears when you turn the wheel | The wheel doesn't send these keys, so this program can't use it. |
+| Nothing happens with `--injected-only` | The keys are `injected=no`: remove the option. |
+| `swallowed=no` | Paused, or no selected output is available: check `--list-devices`. |
+
+<details>
+<summary>What a debug build prints</summary>
+
 Debug builds keep a console and print the selected output, the resulting volume and, for keys 0xAD,
 0xAE and 0xAF only, whether they were injected and swallowed.
 
@@ -258,14 +346,7 @@ key 0xAF press injected=yes swallowed=yes
 key 0xAF release injected=yes swallowed=yes
 ```
 
-| Symptom | Likely cause |
-| --- | --- |
-| Nothing appears when you turn the wheel | The wheel doesn't send these keys, so this program can't use it. |
-| Nothing happens with `--injected-only` | The keys are `injected=no`: remove the option. |
-| `swallowed=no` | Paused, or no selected output is available: check `--list-devices`. |
-| The wheel sometimes changes the default output | A window running as administrator has focus: see [below](#games-running-as-administrator). |
-| The OLED or Sonar options do nothing | GG isn't running: see the logs for the reason. |
-| The wheel changes a Sonar channel instead of your output | A double click moved it: wait 10 seconds. |
+</details>
 
 ### Games running as administrator
 
@@ -283,6 +364,9 @@ full control of your computer.
 
 ## Building from source
 
+<details>
+<summary>Build instructions</summary>
+
 In WSL, or any Linux with Rust installed:
 
 ```sh
@@ -299,6 +383,8 @@ run this from the repository root:
 ```powershell
 iscc /DAppVersion=0.1.0 installer\sonar-rollerbar.iss
 ```
+
+</details>
 
 ## Releases
 
