@@ -391,6 +391,12 @@ iscc /DAppVersion=0.1.0 installer\sonar-rollerbar.iss
 Pushing a `v*` tag that matches the version in `Cargo.toml` runs the checks, builds the executable
 and installer, attests their provenance and publishes them with their SHA256 checksums.
 
+## Credits
+
+This project was inspired by
+[steelseries-apex-roller](https://github.com/StableFlux/steelseries-apex-roller) by StableFlux, a
+tray app that maps the Apex Pro Gen 3's wheel and media button to Sonar's channels.
+
 ## License
 
 [MIT](LICENSE)
