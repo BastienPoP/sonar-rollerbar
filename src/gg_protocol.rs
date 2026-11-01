@@ -55,7 +55,7 @@ pub const CHANNELS: [Channel; 6] = [
     },
 ];
 const GAME: usize = 1;
-const AUX: usize = 4;
+const MIC: usize = 5;
 
 /// Something the mixer window can set and the wheel can be pointed at.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -74,13 +74,13 @@ impl Control {
         }
     }
 
-    /// The wheel's next target, with ChatMix one double click away. Master and the Mic aren't
-    /// targets: the mixer window sets them.
+    /// The wheel's next target, with ChatMix one double click away. Master isn't a target: the
+    /// mixer window sets it.
     pub fn next(self, chat_mix_available: bool) -> Self {
         match self {
             Self::Output if chat_mix_available => Self::ChatMix,
             Self::Output | Self::ChatMix => Self::Channel(GAME),
-            Self::Channel(index) if index < AUX => Self::Channel(index + 1),
+            Self::Channel(index) if index < MIC => Self::Channel(index + 1),
             Self::Channel(_) => Self::Output,
         }
     }
@@ -508,6 +508,7 @@ mod tests {
                 Control::Channel(2),
                 Control::Channel(3),
                 Control::Channel(4),
+                Control::Channel(5),
                 Control::Output,
             ]
         );
@@ -517,7 +518,7 @@ mod tests {
     fn the_wheel_skips_an_unavailable_chat_mix() {
         assert_eq!(Control::Output.next(false), Control::Channel(1));
         assert_eq!(Control::ChatMix.next(false), Control::Channel(1));
-        assert_eq!(Control::Channel(4).next(false), Control::Output);
+        assert_eq!(Control::Channel(5).next(false), Control::Output);
     }
 
     #[test]
