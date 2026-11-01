@@ -92,3 +92,6 @@ GG window refuses software ChatMix with a headset that has its own dial, so the 
 
 The GG window only redraws through GG's `/eventing` WebSocket, which needs actions that exist in
 Streamer mode only.
+
+Keep the OLED as text on the `screened` device type, which reaches every SteelSeries screen. Images
+must match one exact resolution, so a 128x40 version was built and removed.
