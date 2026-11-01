@@ -62,6 +62,8 @@ The hook, the wheel, the tray and the installer can only be validated by running
   hook reads no extra key. Play/Pause, Next and Previous stay untouched. On the Apex Pro, 2 and 3
   presses of the media button send Next and Previous, and 4 send Previous then Play/Pause, so no
   press count is free.
+- The wheel's targets are ChatMix first, then the channels in mixer order. The Mic is always one.
+  Master is one only with `wheel_master`, because moving it rescales every channel.
 - If Sonar stops answering, the wheel must return to the output, so that keys keep working.
 - No clipboard access, elevation, service or driver. Files stay in
   `%LOCALAPPDATA%\sonar-rollerbar`, apart from the sign-in shortcut.

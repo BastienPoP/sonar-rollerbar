@@ -11,9 +11,9 @@ use std::sync::mpsc::{Receiver, RecvTimeoutError};
 use std::time::{Duration, Instant};
 
 use crate::gg_protocol::{
-    CHANNELS, ChannelLevel, ChatMix, Control, Mode, channel_level, json_string, loopback_port,
-    oled_balance, oled_binding, oled_frame, oled_level, oled_metadata, oled_stop, oled_title,
-    routed_output, sonar_port, ui_action_message,
+    CHANNELS, ChannelLevel, ChatMix, Control, MASTER, Mode, channel_level, json_string,
+    loopback_port, oled_balance, oled_binding, oled_frame, oled_level, oled_metadata, oled_stop,
+    oled_title, routed_output, sonar_port, ui_action_message,
 };
 use crate::win::loopback::{Scheme, request, websocket_send};
 
@@ -43,6 +43,7 @@ pub struct Features {
     pub mixer: bool,
     pub follow_output: bool,
     pub wheel_select: bool,
+    pub wheel_master: bool,
 }
 
 pub struct Output {
@@ -158,8 +159,8 @@ impl Wheel {
         }
     }
 
-    fn advance(&mut self, chat_mix_available: bool, hooks: &Hooks) {
-        self.set(self.target.next(chat_mix_available), hooks);
+    fn advance(&mut self, chat_mix_available: bool, master: bool, hooks: &Hooks) {
+        self.set(self.target.next(chat_mix_available, master), hooks);
         self.keep_target();
     }
 
@@ -432,6 +433,9 @@ pub fn run(events: Receiver<Event>, hooks: Hooks) {
             requests.next_target = false;
             wheel.set(Control::Output, &hooks);
         }
+        if !features.wheel_master && wheel.target == Control::Channel(MASTER) {
+            wheel.set(Control::Output, &hooks);
+        }
         wheel.return_if_due(&hooks);
         sonar.apply_wheel(wheel.target, &mut requests, (hooks.step)());
         if requests.moves_wheel() {
@@ -449,7 +453,8 @@ pub fn run(events: Receiver<Event>, hooks: Hooks) {
                 wheel.set(Control::Output, &hooks);
             } else if requests.next_target {
                 let chat_mix = sonar.mixer.and_then(|mixer| mixer.chat_mix);
-                wheel.advance(chat_mix.is_some_and(ChatMix::is_available), &hooks);
+                let chat_mix_available = chat_mix.is_some_and(ChatMix::is_available);
+                wheel.advance(chat_mix_available, features.wheel_master, &hooks);
             }
             sonar_report.outcome("Sonar", result, &hooks);
         }

@@ -56,7 +56,7 @@ the optional SteelSeries features, which are all off by default.
 | Follow Sonar's output | GG and Sonar | Reads which output Sonar plays to |
 | Choosing what the wheel controls | GG and Sonar | Reads and sets Sonar's volumes, mutes and ChatMix |
 
-- With all four off, no connection is opened.
+- With all of them off, no connection is opened.
 - Requests can't leave your computer: `127.0.0.1` is hard-coded in `src/win/loopback.rs` and isn't a
   parameter, no proxy is used, and CI checks that there is only one such call.
 - Addresses from GG's `coreProps.json` are refused unless they are on `127.0.0.1`.
@@ -76,7 +76,7 @@ No key data is ever sent: Sonar and GameSense only receive the resulting levels.
 
 Everything is in `%LOCALAPPDATA%\sonar-rollerbar`, apart from the optional sign-in shortcut.
 
-- `config.ini` holds the four options and the wheel step of each output. Output choices stay as
+- `config.ini` holds the options and the wheel step of each output. Output choices stay as
   command-line arguments.
 - The log holds program events: start and stop, output changes, pause, and errors. An entry can
   contain the name of an audio output. It never holds keys, not even the volume keys: only the

@@ -14,6 +14,7 @@ pub struct Options {
     pub sonar_mixer: bool,
     pub follow_output: bool,
     pub wheel_select: bool,
+    pub wheel_master: bool,
     /// Wheel step in percent, for each output that has its own.
     pub steps: Vec<(String, i32)>,
 }
@@ -25,6 +26,7 @@ impl Options {
             sonar_mixer: false,
             follow_output: false,
             wheel_select: false,
+            wheel_master: false,
             steps: Vec::new(),
         }
     }
@@ -55,6 +57,7 @@ impl Options {
             "sonar_mixer" => self.sonar_mixer = enabled,
             "follow_output" => self.follow_output = enabled,
             "wheel_select" => self.wheel_select = enabled,
+            "wheel_master" => self.wheel_master = enabled,
             _ => {}
         }
     }
@@ -62,11 +65,13 @@ impl Options {
     pub fn render(&self) -> String {
         let flag = u8::from;
         let mut text = format!(
-            "[options]\noled={}\nsonar_mixer={}\nfollow_output={}\nwheel_select={}\n\n[steps]\n",
+            "[options]\noled={}\nsonar_mixer={}\nfollow_output={}\nwheel_select={}\n\
+             wheel_master={}\n\n[steps]\n",
             flag(self.oled),
             flag(self.sonar_mixer),
             flag(self.follow_output),
             flag(self.wheel_select),
+            flag(self.wheel_master),
         );
         for (output, step) in &self.steps {
             text.push_str(&format!("{output}={step}\n"));
@@ -111,15 +116,16 @@ mod tests {
     fn every_option_is_off_by_default() {
         let options = Options::parse("");
         assert!(!options.oled && !options.sonar_mixer && !options.follow_output);
-        assert!(!options.wheel_select);
+        assert!(!options.wheel_select && !options.wheel_master);
     }
 
     #[test]
     fn reads_the_installer_format() {
-        let text = "[options]\r\noled=1\r\nsonar_mixer=0\r\nfollow_output=1\r\nwheel_select=1\r\n";
+        let text = "[options]\r\noled=1\r\nsonar_mixer=0\r\nfollow_output=1\r\nwheel_select=1\r\n\
+                    wheel_master=1\r\n";
         let options = Options::parse(text);
         assert!(options.oled && !options.sonar_mixer && options.follow_output);
-        assert!(options.wheel_select);
+        assert!(options.wheel_select && options.wheel_master);
     }
 
     #[test]
@@ -145,6 +151,7 @@ mod tests {
     fn round_trips_through_text() {
         let mut options = Options::new();
         options.oled = true;
+        options.wheel_master = true;
         options.set_step("Headset", 5);
         assert_eq!(Options::parse(&options.render()), options);
     }

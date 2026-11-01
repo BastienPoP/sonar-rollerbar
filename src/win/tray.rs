@@ -38,6 +38,7 @@ pub struct TrayStatus {
     pub sonar_mixer: bool,
     pub follow_output: bool,
     pub wheel_select: bool,
+    pub wheel_master: bool,
 }
 
 pub enum TrayCommand {
@@ -50,6 +51,7 @@ pub enum TrayCommand {
     ToggleSonarMixer,
     ToggleFollowOutput,
     ToggleWheelSelect,
+    ToggleWheelMaster,
 }
 
 /// Connects the tray to the rest of the program. It has no other access to its state.
@@ -80,6 +82,7 @@ const MENU_OLED: usize = 8;
 const MENU_SONAR_MIXER: usize = 9;
 const MENU_FOLLOW_OUTPUT: usize = 10;
 const MENU_WHEEL_SELECT: usize = 11;
+const MENU_WHEEL_MASTER: usize = 12;
 const MENU_STEP_BASE: usize = 100;
 const STEP_CHOICES: [i32; 5] = [1, 2, 3, 5, 10];
 
@@ -228,6 +231,12 @@ fn fill_options_menu(menu: HMENU, status: &TrayStatus) -> Result<()> {
             MF_STRING
         }
     };
+    // Only means something with the double click on, so it stays visible but can't be changed.
+    let master_flags = if status.wheel_select {
+        flags(status.wheel_master)
+    } else {
+        flags(status.wheel_master) | MF_GRAYED
+    };
     // SAFETY: `menu` is valid and the strings are static.
     unsafe {
         AppendMenuW(
@@ -253,6 +262,12 @@ fn fill_options_menu(menu: HMENU, status: &TrayStatus) -> Result<()> {
             flags(status.wheel_select),
             MENU_WHEEL_SELECT,
             w!("Double-click the wheel to choose what it controls"),
+        )?;
+        AppendMenuW(
+            menu,
+            master_flags,
+            MENU_WHEEL_MASTER,
+            w!("Include Master in the double click"),
         )?;
     }
     Ok(())
@@ -346,6 +361,7 @@ fn show_tray_menu(window: HWND) {
         Ok(MENU_SONAR_MIXER) => TrayCommand::ToggleSonarMixer,
         Ok(MENU_FOLLOW_OUTPUT) => TrayCommand::ToggleFollowOutput,
         Ok(MENU_WHEEL_SELECT) => TrayCommand::ToggleWheelSelect,
+        Ok(MENU_WHEEL_MASTER) => TrayCommand::ToggleWheelMaster,
         Ok(MENU_MIXER) => {
             let _ = mixer::open();
             return;

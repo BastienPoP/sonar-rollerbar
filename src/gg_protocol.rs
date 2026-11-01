@@ -54,6 +54,7 @@ pub const CHANNELS: [Channel; 6] = [
         ui_action: None,
     },
 ];
+pub const MASTER: usize = 0;
 const GAME: usize = 1;
 const MIC: usize = 5;
 
@@ -74,11 +75,12 @@ impl Control {
         }
     }
 
-    /// The wheel's next target, with ChatMix one double click away. Master isn't a target: the
-    /// mixer window sets it.
-    pub fn next(self, chat_mix_available: bool) -> Self {
+    /// The wheel's next target, with ChatMix one double click away. Master rescales the whole mix,
+    /// so it is only a target when its option is on.
+    pub fn next(self, chat_mix_available: bool, master: bool) -> Self {
         match self {
             Self::Output if chat_mix_available => Self::ChatMix,
+            Self::Output | Self::ChatMix if master => Self::Channel(MASTER),
             Self::Output | Self::ChatMix => Self::Channel(GAME),
             Self::Channel(index) if index < MIC => Self::Channel(index + 1),
             Self::Channel(_) => Self::Output,
@@ -490,10 +492,10 @@ mod tests {
         assert_eq!(ChatMix::turned(-95, -3), -100);
     }
 
-    fn wheel_cycle(chat_mix_available: bool) -> Vec<Control> {
-        let mut seen = vec![Control::Output.next(chat_mix_available)];
+    fn wheel_cycle(chat_mix_available: bool, master: bool) -> Vec<Control> {
+        let mut seen = vec![Control::Output.next(chat_mix_available, master)];
         while seen[seen.len() - 1] != Control::Output {
-            seen.push(seen[seen.len() - 1].next(chat_mix_available));
+            seen.push(seen[seen.len() - 1].next(chat_mix_available, master));
         }
         seen
     }
@@ -501,7 +503,7 @@ mod tests {
     #[test]
     fn the_wheel_cycles_through_its_targets() {
         assert_eq!(
-            wheel_cycle(true),
+            wheel_cycle(true, false),
             [
                 Control::ChatMix,
                 Control::Channel(1),
@@ -515,10 +517,18 @@ mod tests {
     }
 
     #[test]
+    fn the_wheel_reaches_master_only_with_its_option() {
+        let cycle = wheel_cycle(true, true);
+        assert_eq!(cycle[..3], [Control::ChatMix, Control::Channel(0), Control::Channel(1)]);
+        assert!(!wheel_cycle(true, false).contains(&Control::Channel(0)));
+        assert_eq!(Control::Output.next(false, true), Control::Channel(0));
+    }
+
+    #[test]
     fn the_wheel_skips_an_unavailable_chat_mix() {
-        assert_eq!(Control::Output.next(false), Control::Channel(1));
-        assert_eq!(Control::ChatMix.next(false), Control::Channel(1));
-        assert_eq!(Control::Channel(5).next(false), Control::Output);
+        assert_eq!(Control::Output.next(false, false), Control::Channel(1));
+        assert_eq!(Control::ChatMix.next(false, false), Control::Channel(1));
+        assert_eq!(Control::Channel(5).next(false, false), Control::Output);
     }
 
     #[test]

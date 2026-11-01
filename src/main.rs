@@ -361,6 +361,7 @@ fn tray_status() -> TrayStatus {
         sonar_mixer: features.mixer,
         follow_output: features.follow_output,
         wheel_select: features.wheel_select,
+        wheel_master: features.wheel_master,
     }
 }
 
@@ -435,6 +436,9 @@ fn on_tray_command(command: TrayCommand) {
         TrayCommand::ToggleWheelSelect => {
             update_options(|options| options.wheel_select = !options.wheel_select)
         }
+        TrayCommand::ToggleWheelMaster => {
+            update_options(|options| options.wheel_master = !options.wheel_master)
+        }
     };
     if let Err(error) = result {
         record!("tray command failed: {error}");
@@ -502,12 +506,14 @@ fn gg_features() -> gg::Features {
             mixer: false,
             follow_output: false,
             wheel_select: false,
+            wheel_master: false,
         },
         |options| gg::Features {
             oled: options.oled,
             mixer: options.sonar_mixer,
             follow_output: options.follow_output,
             wheel_select: options.wheel_select,
+            wheel_master: options.wheel_master,
         },
     )
 }
