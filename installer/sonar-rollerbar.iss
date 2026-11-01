@@ -58,6 +58,7 @@ Source: "..\target\x86_64-pc-windows-gnu\release\{#AppExeName}"; DestDir: "{app}
 Source: "..\README.md";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\SECURITY.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE";     DestDir: "{app}"; Flags: ignoreversion
+Source: "mixer-preview.png"; Flags: dontcopy
 
 [Dirs]
 Name: "{#ConfigDir}"
@@ -67,6 +68,7 @@ Filename: "{#ConfigFile}"; Section: "options"; Key: "oled"; String: "{code:Optio
 Filename: "{#ConfigFile}"; Section: "options"; Key: "sonar_mixer"; String: "{code:OptionValue|sonar_mixer}"
 Filename: "{#ConfigFile}"; Section: "options"; Key: "follow_output"; String: "{code:OptionValue|follow_output}"
 Filename: "{#ConfigFile}"; Section: "options"; Key: "wheel_select"; String: "{code:OptionValue|wheel_select}"
+Filename: "{#ConfigFile}"; Section: "options"; Key: "wheel_master"; String: "{code:OptionValue|wheel_master}"
 
 [Tasks]
 Name: "startup"; Description: "Start {#AppName} automatically when I sign in"; Flags: unchecked
@@ -100,12 +102,21 @@ const
   PhysicalKind = '[physical]';
   KindColumn = 3;
   NameColumn = 14;
+  MixerPreview = 'mixer-preview.png';
+  // The size of that file, and the gap that keeps the option texts clear of it.
+  PreviewWidth = 170;
+  PreviewHeight = 232;
+  PreviewGap = 14;
 
 var
   OutputPageId: Integer;
   PrimaryCombo: TNewComboBox;
   FallbackCombo: TNewComboBox;
-  OptionsPage: TInputOptionWizardPage;
+  OledCheck: TNewCheckBox;
+  MixerCheck: TNewCheckBox;
+  FollowCheck: TNewCheckBox;
+  WheelCheck: TNewCheckBox;
+  MasterCheck: TNewCheckBox;
 
 function PhysicalOutputs: TStringList;
 var
@@ -149,6 +160,93 @@ begin
   Result.Width := Page.SurfaceWidth;
 end;
 
+function AddText(Page: TWizardPage; const Caption: String;
+  Left, Top, Width: Integer): TNewStaticText;
+begin
+  Result := TNewStaticText.Create(Page);
+  Result.AutoSize := False;
+  Result.WordWrap := True;
+  Result.Left := Left;
+  Result.Top := Top;
+  Result.Width := Width;
+  Result.Caption := Caption;
+  Result.Parent := Page.Surface;
+  Result.AdjustHeight;
+end;
+
+// Adds a tick box and what it does, and moves Top below them.
+function AddOption(Page: TWizardPage; const Key, Caption, Description: String;
+  Left, Width: Integer; var Top: Integer): TNewCheckBox;
+var
+  Text: TNewStaticText;
+begin
+  Result := TNewCheckBox.Create(Page);
+  Result.Left := Left;
+  Result.Top := Top;
+  Result.Width := Width - Left;
+  Result.Height := ScaleY(17);
+  Result.Caption := Caption;
+  // Reads the file rather than earlier choices: the tray menu may have changed it since.
+  Result.Checked := GetIniBool('options', Key, False, ExpandConstant('{#ConfigFile}'));
+  Result.Parent := Page.Surface;
+  Top := Top + Result.Height;
+  if Description <> '' then
+  begin
+    Text := AddText(Page, Description, Left + ScaleX(18), Top, Width - Left - ScaleX(18));
+    Top := Top + Text.Height + ScaleY(6);
+  end;
+end;
+
+procedure WheelCheckClick(Sender: TObject);
+begin
+  MasterCheck.Enabled := WheelCheck.Checked;
+end;
+
+procedure AddOptionsPage;
+var
+  Page: TWizardPage;
+  Preview: TBitmapImage;
+  Note: TNewStaticText;
+  Top, Width: Integer;
+begin
+  Page := CreateCustomPage(OutputPageId, 'Optional features',
+    'Your wheel already controls your output. Each option adds something on top.');
+
+  Width := Page.SurfaceWidth - ScaleX(PreviewWidth + PreviewGap);
+  Note := AddText(Page,
+    'They need SteelSeries GG and stay off unless you tick them. ' +
+    'You can change them later from the tray icon''s Options menu.', 0, 0, Width);
+
+  Top := Note.Height + ScaleY(8);
+  OledCheck := AddOption(Page, 'oled', 'Show the volume on the keyboard OLED',
+    'The keyboard''s screen shows what changed and its level for 3 seconds.', 0, Width, Top);
+  MixerCheck := AddOption(Page, 'sonar_mixer', 'Sonar mixer',
+    'A window, opened from the tray icon, with sliders and mute buttons for your output, ' +
+    'Sonar''s channels, the Mic and ChatMix.', 0, Width, Top);
+  FollowCheck := AddOption(Page, 'follow_output', 'Follow Sonar''s output',
+    'When you change the output in GG, the wheel moves to it.', 0, Width, Top);
+  WheelCheck := AddOption(Page, 'wheel_select', 'Double-click the wheel to choose its target',
+    'Points the wheel at ChatMix, Game, Chat, Media, Aux or the Mic for 10 seconds. ' +
+    'A single click then takes a third of a second.', 0, Width, Top);
+  MasterCheck := AddOption(Page, 'wheel_master', 'Include Master in the double click', '',
+    ScaleX(18), Width, Top);
+  WheelCheck.OnClick := @WheelCheckClick;
+  WheelCheckClick(WheelCheck);
+
+  ExtractTemporaryFile(MixerPreview);
+  Preview := TBitmapImage.Create(Page);
+  Preview.Stretch := True;
+  Preview.Left := Page.SurfaceWidth - ScaleX(PreviewWidth);
+  Preview.Width := ScaleX(PreviewWidth);
+  Preview.Height := ScaleY(PreviewHeight);
+  Preview.PngImage.LoadFromFile(ExpandConstant('{tmp}\') + MixerPreview);
+  Preview.Parent := Page.Surface;
+
+  Note := AddText(Page, 'The Sonar mixer', Preview.Left, Preview.Height + ScaleY(4),
+    Preview.Width);
+  Note.Alignment := taCenter;
+end;
+
 procedure InitializeWizard;
 var
   Page: TWizardPage;
@@ -156,7 +254,7 @@ var
   Index: Integer;
 begin
   Page := CreateCustomPage(wpSelectDir, 'Audio outputs',
-    'Choose which output the volume wheel controls.');
+    'Choose which output the volume wheel controls. This is all the program needs.');
   OutputPageId := Page.ID;
 
   AddLabel(Page, 'Main output:', 0);
@@ -178,34 +276,24 @@ begin
   PrimaryCombo.Text := GetPreviousData('PrimaryOutput', '');
   FallbackCombo.Text := GetPreviousData('FallbackOutput', NoFallback);
 
-  OptionsPage := CreateInputOptionPage(OutputPageId, 'SteelSeries options',
-    'Choose the optional SteelSeries features.',
-    'These use SteelSeries GG on this computer and stay off unless you tick them. ' +
-    'You can change them later from the tray icon menu.', False, False);
-  OptionsPage.Add('Show the volume on the keyboard OLED');
-  OptionsPage.Add('Add a Sonar mixer, opened by clicking the tray icon');
-  OptionsPage.Add('Make the wheel follow the output Sonar plays to');
-  OptionsPage.Add('Double-click the wheel to choose what it controls (Sonar channels, ChatMix)');
-  // Reads the file rather than earlier choices: the tray menu may have changed it since.
-  OptionsPage.Values[0] := GetIniBool('options', 'oled', False, ExpandConstant('{#ConfigFile}'));
-  OptionsPage.Values[1] := GetIniBool('options', 'sonar_mixer', False, ExpandConstant('{#ConfigFile}'));
-  OptionsPage.Values[2] := GetIniBool('options', 'follow_output', False, ExpandConstant('{#ConfigFile}'));
-  OptionsPage.Values[3] := GetIniBool('options', 'wheel_select', False, ExpandConstant('{#ConfigFile}'));
+  AddOptionsPage;
 end;
 
 function OptionValue(Param: String): String;
 var
-  Index: Integer;
+  Check: TNewCheckBox;
 begin
-  Index := 0;
+  Check := OledCheck;
   if Param = 'sonar_mixer' then
-    Index := 1
+    Check := MixerCheck
   else if Param = 'follow_output' then
-    Index := 2
+    Check := FollowCheck
   else if Param = 'wheel_select' then
-    Index := 3;
+    Check := WheelCheck
+  else if Param = 'wheel_master' then
+    Check := MasterCheck;
   Result := '0';
-  if OptionsPage.Values[Index] then
+  if Check.Checked then
     Result := '1';
 end;
 
